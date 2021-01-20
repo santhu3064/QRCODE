@@ -17,9 +17,9 @@ phases:
       - echo Build started on `date`
       - echo Building the Docker image...
       - docker build -t nginx:latest .
-      - docker tag nginx:latest 307533935679.dkr.ecr.eu-west-2.amazonaws.com/test:latest
+      - docker tag nginx:latest 307533935679.dkr.ecr.eu-west-2.amazonaws.com/test/nginx:latest
   post_build:
     commands:
       - echo Build completed on `date`
       - echo Pushing the Docker image...
-      - docker push 307533935679.dkr.ecr.eu-west-2.amazonaws.com/test:latest
+      - docker push 307533935679.dkr.ecr.eu-west-2.amazonaws.com/test/nginx:latest
