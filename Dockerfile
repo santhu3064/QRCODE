@@ -1,3 +1,3 @@
 FROM nginx
 
-COPY qr/* /usr/share/nginx/html/*
+COPY qr/* /usr/share/nginx/html/
