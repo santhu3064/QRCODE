@@ -26,7 +26,7 @@ phases:
       - echo Build completed on `date`
       - echo Pushing the Docker image...
       - docker push ${REPOSITORY_URI}:${IMAGE_TAG}
-      - docker push ${REPOSITORY_URI}:${latest}
+      - docker push ${REPOSITORY_URI}:latest
       - echo Writing image definitions file...
       - printf '[{"name":"nginx","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
 artifacts:
