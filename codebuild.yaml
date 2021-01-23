@@ -22,6 +22,9 @@ Parameters:
   CodeBuildRoleDescription:
     Type: String
     Default: "The code build assume role"
+  GitHubSource:
+    Type: String
+    Default: "https://github.com/santhu3064/QRCODE.git"
 Resources:
   EcrRepository:
     Type: AWS::ECR::Repository
@@ -96,3 +99,55 @@ Resources:
               -  'ecr:GetRepositoryPolicy'
             Resource: !GetAtt EcrRepository.Arn
     DependsOn: CodeBuildRole
+  LogsCodeBuildPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: !Join
+          - '-'
+          - - 'logs'
+            - !Ref ApplicationName
+            - !Ref Environment
+      Roles:
+        - !Ref CodeBuildRole
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'logs:CreateLogGroup'
+              - 'logs:CreateLogStream'
+              - 'logs:PutLogEvents'
+            Resource: '*'
+    DependsOn: CodeBuildRole
+  QrCodeBuild:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Artifacts:
+        Type: NO_ARTIFACTS
+      Environment:
+          PrivilegedMode: true
+          Image: aws/codebuild/standard:4.0
+          Type: LINUX_CONTAINER
+          ComputeType: BUILD_GENERAL1_SMALL
+          EnvironmentVariables:
+            - Name: ECRREPOSITORY
+              Type: PLAINTEXT
+              Value: !Join
+                - "."
+                -
+                  - !Ref "AWS::AccountId"
+                  - "dkr"
+                  - "ecr"
+                  - !Ref "AWS::Region"
+                  - "amazonaws"
+                  - "com"
+            - Name: REPOSITORYNAME
+              Type: PLAINTEXT
+              Value: !Ref EcrRepository
+      Name: !Sub "${Environment}-${ApplicationName}"
+      ServiceRole: !Ref CodeBuildRole
+      Source:
+        Auth:
+          Type: OAUTH
+        Location: !Ref GitHubSource
+        Type: GITHUB
