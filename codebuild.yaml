@@ -1,0 +1,98 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: A sample template
+Parameters:
+  ApplicationName:
+    Type: String
+    Default: qrcode
+    Description: Enter The name of thr application.
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - preprod
+      - prod
+    Description: EnvironmentName.
+  RepositoryName:
+    Type: String
+    Default: qrcodecft
+  EcrCodeBuildPolicyName:
+    Type: String
+    Default: ecr
+  CodeBuildRoleDescription:
+    Type: String
+    Default: "The code build assume role"
+Resources:
+  EcrRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Ref RepositoryName
+      Tags:
+        - Key: Name
+          Value: !Ref RepositoryName
+        - Key: Environment
+          Value: !Ref Environment
+  CodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service: codebuild.amazonaws.com
+      Path: /
+      Description: !Ref CodeBuildRoleDescription
+      RoleName: !Join
+        - '-'
+        - - codebuild
+          - !Ref Environment
+          - 'role'
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+  EcrCodeBuildPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: !Join
+          - '-'
+          - - 'ecr'
+            - !Ref ApplicationName
+            - !Ref Environment
+      Roles:
+        - !Ref CodeBuildRole
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              -  'ecr:PutImageTagMutability'
+              -  'ecr:StartImageScan'
+              -  'ecr:ListTagsForResource'
+              -  'ecr:UploadLayerPart'
+              -  'ecr:BatchDeleteImage'
+              -  'ecr:ListImages'
+              -  'ecr:DeleteRepository'
+              -  'ecr:CompleteLayerUpload'
+              -  'ecr:TagResource'
+              -  'ecr:DescribeRepositories'
+              -  'ecr:DeleteRepositoryPolicy'
+              -  'ecr:BatchCheckLayerAvailability'
+              -  'ecr:ReplicateImage'
+              -  'ecr:GetLifecyclePolicy'
+              -  'ecr:PutLifecyclePolicy'
+              -  'ecr:DescribeImageScanFindings'
+              -  'ecr:GetLifecyclePolicyPreview'
+              -  'ecr:CreateRepository'
+              -  'ecr:PutImageScanningConfiguration'
+              -  'ecr:GetDownloadUrlForLayer'
+              -  'ecr:DeleteLifecyclePolicy'
+              -  'ecr:PutImage'
+              -  'ecr:UntagResource'
+              -  'ecr:BatchGetImage'
+              -  'ecr:DescribeImages'
+              -  'ecr:StartLifecyclePolicyPreview'
+              -  'ecr:InitiateLayerUpload'
+              -  'ecr:GetRepositoryPolicy'
+            Resource: !GetAtt EcrRepository.Arn
+    DependsOn: CodeBuildRole
