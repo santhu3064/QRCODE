@@ -25,6 +25,28 @@ Parameters:
   GitHubSource:
     Type: String
     Default: "https://github.com/santhu3064/QRCODE.git"
+  CodeBuildEnvironmentPrivilegedMode:
+    Type: String
+    Default: true
+  CodeBuildEnvironmentImage:
+    Type: String
+    Default: aws/codebuild/standard:4.0
+  CodeBuildEnvironmentType:
+    Type: String
+    Default: 'LINUX_CONTAINER'
+    AllowedValues:
+      - 'ARM_CONTAINER'
+      - 'LINUX_CONTAINER'
+      - 'LINUX_GPU_CONTAINER'
+      - 'WINDOWS_CONTAINER'
+      - 'WINDOWS_SERVER_2019_CONTAINER'
+  CodeBuildEnvironmentComputeType:
+    Type: String
+    Default: 'BUILD_GENERAL1_SMALL'
+    AllowedValues:
+      - 'BUILD_GENERAL1_SMALL'
+      - 'BUILD_GENERAL1_MEDIUM'
+      - 'BUILD_GENERAL1_LARGE'
 Resources:
   EcrRepository:
     Type: AWS::ECR::Repository
@@ -35,6 +57,7 @@ Resources:
           Value: !Ref RepositoryName
         - Key: Environment
           Value: !Ref Environment
+    DeletionPolicy: Retain
   CodeBuildRole:
     Type: AWS::IAM::Role
     Properties:
@@ -76,6 +99,7 @@ Resources:
               -  'ecr:BatchDeleteImage'
               -  'ecr:ListImages'
               -  'ecr:DeleteRepository'
+              -  'ecr:GetAuthorizationToken'
               -  'ecr:CompleteLayerUpload'
               -  'ecr:TagResource'
               -  'ecr:DescribeRepositories'
@@ -97,7 +121,7 @@ Resources:
               -  'ecr:StartLifecyclePolicyPreview'
               -  'ecr:InitiateLayerUpload'
               -  'ecr:GetRepositoryPolicy'
-            Resource: !GetAtt EcrRepository.Arn
+            Resource: "*"
     DependsOn: CodeBuildRole
   LogsCodeBuildPolicy:
     Type: 'AWS::IAM::Policy'
@@ -125,10 +149,10 @@ Resources:
       Artifacts:
         Type: NO_ARTIFACTS
       Environment:
-          PrivilegedMode: true
-          Image: aws/codebuild/standard:4.0
-          Type: LINUX_CONTAINER
-          ComputeType: BUILD_GENERAL1_SMALL
+          PrivilegedMode: !Ref CodeBuildEnvironmentPrivilegedMode
+          Image: !Ref CodeBuildEnvironmentImage
+          Type: !Ref CodeBuildEnvironmentType
+          ComputeType: !Ref CodeBuildEnvironmentComputeType
           EnvironmentVariables:
             - Name: ECRREPOSITORY
               Type: PLAINTEXT
