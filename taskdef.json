@@ -2,7 +2,7 @@
    "containerDefinitions": [
       {
          "essential": true,
-         "image": "307533935679.dkr.ecr.eu-west-2.amazonaws.com/qrcodecft:latest",
+         "image": "<IMAGE1_NAME>",
          "name": "qr",
          "portMappings": [
             {
