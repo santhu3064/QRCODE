@@ -1,0 +1,16 @@
+version: 0.0
+Resources:
+  - TargetService:
+      Type: AWS::ECS::Service
+      Properties:
+        TaskDefinition: "arn:aws:ecs:eu-west-2:307533935679:task-definition/test-qr:2"
+        LoadBalancerInfo:
+          ContainerName: "dev"
+          ContainerPort: 80
+# Optional properties
+        PlatformVersion: "LATEST"
+        NetworkConfiguration:
+          AwsvpcConfiguration:
+            Subnets: ["subnet-050cefe8a1c1767bc","subnet-0f2ebab75f3cc756e"]
+            SecurityGroups: ["sg-0139b04bce1e0d7b7"]
+            AssignPublicIp: "ENABLED"

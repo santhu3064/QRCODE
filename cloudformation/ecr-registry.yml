@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: A sample template
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - preprod
+      - prod
+    Description: EnvironmentName.
+  RepositoryName:
+    Type: String
+    Default: qrcodecft
+Resources:
+  EcrRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Ref RepositoryName
+      Tags:
+        - Key: Name
+          Value: !Ref RepositoryName
+        - Key: Environment
+          Value: !Ref Environment
+Outputs:
+  ECR:
+    Description: ECR repository id
+    Value: !Ref EcrRepository
+    Export:
+      Name: !Sub "${AWS::StackName}-dev-qr"

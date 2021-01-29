@@ -47,17 +47,10 @@ Parameters:
       - 'BUILD_GENERAL1_SMALL'
       - 'BUILD_GENERAL1_MEDIUM'
       - 'BUILD_GENERAL1_LARGE'
+  ECRStackName:
+    Type: String
+    Default: 'arcade'
 Resources:
-  EcrRepository:
-    Type: AWS::ECR::Repository
-    Properties:
-      RepositoryName: !Ref RepositoryName
-      Tags:
-        - Key: Name
-          Value: !Ref RepositoryName
-        - Key: Environment
-          Value: !Ref Environment
-    DeletionPolicy: Retain
   CodeBuildRole:
     Type: AWS::IAM::Role
     Properties:
@@ -167,7 +160,9 @@ Resources:
                   - "com"
             - Name: REPOSITORYNAME
               Type: PLAINTEXT
-              Value: !Ref EcrRepository
+              Value:
+                Fn::ImportValue:
+                  !Sub "${ECRStackName}-dev-qr"
       Name: !Sub "${Environment}-${ApplicationName}"
       ServiceRole: !Ref CodeBuildRole
       Source:
