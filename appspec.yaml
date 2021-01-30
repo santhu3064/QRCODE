@@ -3,9 +3,9 @@ Resources:
   - TargetService:
       Type: AWS::ECS::Service
       Properties:
-        TaskDefinition: <TASK_DEFINITION> 
+        TaskDefinition: <TASK_DEFINITION>
         LoadBalancerInfo:
-          ContainerName: "dev"
+          ContainerName: "qrcode"
           ContainerPort: 80
 # Optional properties
         PlatformVersion: "LATEST"
