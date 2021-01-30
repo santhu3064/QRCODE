@@ -2,7 +2,7 @@
    "containerDefinitions": [
       {
          "essential": true,
-         "image": "<IMAGE1_NAME>",
+           "image": "<IMAGE1_NAME>",
          "name": "qr",
          "portMappings": [
             {
