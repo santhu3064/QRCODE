@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Template for building ecr registry
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - preprod
+      - prod
+    Description: EnvironmentName.
+  ClusterName:
+    Type: String
+    Default: pheonix
+  CapacityProviders:
+    Type: CommaDelimitedList
+    Default:  "FARGATE, FARGATE_SPOT"
+Resources:
+  EcsCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      CapacityProviders:
+        - FARGATE
+        - FARGATE_SPOT
+      DefaultCapacityProviderStrategy:
+        - CapacityProvider: FARGATE
+          Weight: 10
+        - CapacityProvider: FARGATE_SPOT
+          Weight: 10
+      ClusterName: !Ref ClusterName
+      ClusterSettings:
+        - Name: containerInsights
+          Value: enabled
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+Outputs:
+  EcsCluster:
+    Description: ECS cluster id
+    Value: !Ref EcsCluster
+    Export:
+      Name: !Sub "${AWS::StackName}-dev"

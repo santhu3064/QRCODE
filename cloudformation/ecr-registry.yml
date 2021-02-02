@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: A sample template
+Description: Template for building ecr registry
 Parameters:
   Environment:
     Type: String
