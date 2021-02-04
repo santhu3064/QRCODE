@@ -170,3 +170,14 @@ Resources:
           Type: OAUTH
         Location: !Ref GitHubSource
         Type: GITHUB
+Outputs:
+  CodeBuildArn:
+    Description: The Arn of code build for qrcode
+    Value: !GetAtt QrCodeBuild.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-codebuild-arn"
+  CodeBuildName:
+    Description: The name of code build for qrcode
+    Value: !Ref QrCodeBuild
+    Export:
+      Name: !Sub "${AWS::StackName}-codebuild-name"

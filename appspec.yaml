@@ -5,7 +5,7 @@ Resources:
       Properties:
         TaskDefinition: <TASK_DEFINITION>
         LoadBalancerInfo:
-          ContainerName: "qc"
+          ContainerName: "pheonix"
           ContainerPort: 80
 # Optional properties
         PlatformVersion: "LATEST"

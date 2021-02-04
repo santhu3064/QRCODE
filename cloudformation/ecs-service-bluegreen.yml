@@ -1,0 +1,176 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Template for creating ecs service
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - preprod
+      - prod
+    Description: EnvironmentName.
+  FamilyName:
+    Type: String
+    Default: pheonix
+  Capabilities:
+    Type: CommaDelimitedList
+    Default:  "FARGATE"
+  QrContainerName:
+    Type: String
+    Default:  "pheonix"
+  QrImageName:
+    Type: String
+    Default:  "307533935679.dkr.ecr.eu-west-2.amazonaws.com/qrcodecft:latest"
+  QrTaskCpuLimit:
+    Type: Number
+    Default: 512
+  QrTaskMemoryLimit:
+    Type: Number
+    Default: 1024
+  QrContainerCpuLimit:
+    Type: Number
+    Default: 256
+  QrContainerMemoryLimit:
+    Type: Number
+    Default: 512
+  TaskNetworkMode:
+    Type: String
+    Default: "awsvpc"
+  AppContainerPort:
+    Type: Number
+    Default: 80
+  AppHostPort:
+    Type: Number
+    Default: 80
+  EcsClusterStackName:
+    Type: String
+    Default: ecscluster-dev
+  QrCodeTaskDefinitionStackName:
+    Type: String
+    Default: qrcodedev-taksdefiniton
+  ServiceTaksDesiredCount:
+    Type: Number
+    Default: 3
+  HealthCheckGracePeriodSeconds:
+    Type: Number
+    Default: 30
+  LaunchType:
+    Type: String
+    Default: FARGATE
+    AllowedValues:
+      - FARGATE
+      - EC2
+  QrServiceName:
+    Type: String
+    Default: pheonix-service
+  SchedulingStrategy:
+    Type: String
+    Default: REPLICA
+    AllowedValues:
+      - REPLICA
+      - DAEMON
+  Revision:
+    Type: Number
+    Default: 1
+  DeploymentController:
+    Type: String
+    Default: CODE_DEPLOY
+    AllowedValues:
+      - ECS
+      - CODE_DEPLOY
+      - EXTERNAL
+  EcsSubnets:
+    Type: CommaDelimitedList
+    Default: "subnet-0f2ebab75f3cc756e,subnet-050cefe8a1c1767bc"
+  EcsSecurityGroup:
+    Type: CommaDelimitedList
+    Default: "sg-0bf276b7ae8c7a874"
+  EcsQrLoadBalancerName:
+    Type: String
+    Default: "qrecsloadbalancer"
+
+Resources:
+  EcsQrLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      IpAddressType: ipv4
+      Name: !Ref EcsQrLoadBalancerName
+      Scheme: internet-facing
+      SecurityGroups: !Ref EcsSecurityGroup
+      Subnets: !Ref EcsSubnets
+      Type: application
+  EcsQrLoadBalancerListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref EcsQrLoadBalancer
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        - Type: forward
+          ForwardConfig:
+            TargetGroups:
+              - TargetGroupArn: !Ref EcsQrTargetGroupOne
+                Weight: 1
+    DependsOn:
+      - EcsQrTargetGroupOne
+      - EcsQrTargetGroupTwo
+  EcsQrTargetGroupOne:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckEnabled: yes
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /
+      HealthCheckPort: 80
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 15
+      HealthyThresholdCount: 3
+      Name: ECRTargetGroupOne
+      Port: 80
+      Protocol: HTTP
+      TargetType: ip
+      VpcId: vpc-04488209c8cc80a37
+    DependsOn: EcsQrLoadBalancer
+  EcsQrTargetGroupTwo:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckEnabled: yes
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /
+      HealthCheckPort: 80
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 15
+      HealthyThresholdCount: 3
+      Name: ECRTargetGroupTwo
+      Port: 80
+      Protocol: HTTP
+      TargetType: ip
+      VpcId: vpc-04488209c8cc80a37
+    DependsOn: EcsQrLoadBalancer
+  QrEcsService:
+    Type: AWS::ECS::Service
+    Properties:
+        Cluster:
+          Fn::ImportValue:
+            !Sub "${EcsClusterStackName}-dev"
+        DeploymentController:
+          Type: !Ref DeploymentController
+        DesiredCount: !Ref ServiceTaksDesiredCount
+        HealthCheckGracePeriodSeconds: !Ref HealthCheckGracePeriodSeconds
+        LaunchType: !Ref LaunchType
+        ServiceName: !Ref QrServiceName
+        SchedulingStrategy: !Ref SchedulingStrategy
+        NetworkConfiguration:
+          AwsvpcConfiguration:
+            AssignPublicIp: ENABLED
+            SecurityGroups: !Ref EcsSecurityGroup
+            Subnets: !Ref EcsSubnets
+        TaskDefinition: !Join
+            - ':'
+            - -  Fn::ImportValue:
+                    !Sub "${QrCodeTaskDefinitionStackName}-family"
+              - Fn::ImportValue:
+                      !Sub "${QrCodeTaskDefinitionStackName}-revison"
+        LoadBalancers:
+          - ContainerName: !Ref QrContainerName
+            ContainerPort: !Ref AppContainerPort
+            TargetGroupArn: !Ref EcsQrTargetGroupOne

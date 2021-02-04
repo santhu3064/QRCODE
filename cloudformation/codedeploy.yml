@@ -1,0 +1,35 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Template for creating code deploy application
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - preprod
+      - prod
+    Description: EnvironmentName.
+  ApplicationName:
+    Type: String
+    Default: qrcodeapplciation
+  ComputePlatform:
+    Type: String
+    Default: ECS
+    AllowedValues:
+      - ECS
+      - Lambda
+      - Server
+  DeploymentGroupName:
+    Type: String
+    Default: QrcodeDeploymentgroup
+Resources:
+  QRCodeDeployApplication:
+    Type: AWS::CodeDeploy::Application
+    Properties:
+      ApplicationName: !Ref ApplicationName
+      ComputePlatform: !Ref ComputePlatform
+      Tags:
+        - Key: Name
+          Value: !Ref RepositoryName
+        - Key: Environment
+          Value: !Ref Environment

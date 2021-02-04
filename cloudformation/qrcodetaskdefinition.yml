@@ -1,0 +1,127 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Template for creating ecs service
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - preprod
+      - prod
+    Description: EnvironmentName.
+  FamilyName:
+    Type: String
+    Default: pheonix
+  Capabilities:
+    Type: CommaDelimitedList
+    Default:  "FARGATE"
+  TaskNetworkMode:
+    Type: String
+    Default: "awsvpc"
+  AppContainerPort:
+    Type: Number
+    Default: 80
+  AppHostPort:
+    Type: Number
+    Default: 80
+  QrContainerName:
+    Type: String
+    Default:  "pheonix"
+  QrImageName:
+    Type: String
+    Default:  "307533935679.dkr.ecr.eu-west-2.amazonaws.com/qrcodecft:latest"
+  QrTaskCpuLimit:
+    Type: Number
+    Default: 512
+  QrTaskMemoryLimit:
+    Type: Number
+    Default: 1024
+  QrContainerCpuLimit:
+    Type: Number
+    Default: 256
+  QrContainerMemoryLimit:
+    Type: Number
+    Default: 512
+Resources:
+  ECSTaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service: ecs-tasks.amazonaws.com
+      Path: /
+      Description: "ECS ROLE"
+      RoleName: !Join
+        - '-'
+        - - ecstaskexecution
+          - !Ref Environment
+          - 'role'
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+  EcsEcrPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: !Join
+          - '-'
+          - - 'ecr'
+            - "executionpolicy"
+            - !Ref Environment
+      Roles:
+        - !Ref ECSTaskExecutionRole
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'ecr:GetRegistryPolicy'
+              - 'ecr:DescribeImageScanFindings'
+              - 'ecr:GetLifecyclePolicyPreview'
+              - 'ecr:GetDownloadUrlForLayer'
+              - 'ecr:DescribeRegistry'
+              - 'ecr:GetAuthorizationToken'
+              - 'ecr:ListTagsForResource'
+              - 'ecr:ListImages'
+              - 'ecr:BatchGetImage'
+              - 'ecr:DescribeImages'
+              - 'ecr:DescribeRepositories'
+              - 'ecr:BatchCheckLayerAvailability'
+              - 'ecr:GetRepositoryPolicy'
+              - 'ecr:GetLifecyclePolicy'
+              - 'logs:CreateLogStream'
+              - 'logs:PutLogEvents'
+            Resource: "*"
+  EcsTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Ref FamilyName
+      RequiresCompatibilities: !Ref Capabilities
+      NetworkMode: !Ref TaskNetworkMode
+      ExecutionRoleArn: !GetAtt ECSTaskExecutionRole.Arn
+      Cpu: !Ref QrTaskCpuLimit
+      Memory: !Ref QrTaskMemoryLimit
+      ContainerDefinitions:
+        -
+          Name: !Ref QrContainerName
+          Image: !Ref QrImageName
+          Cpu: !Ref QrContainerCpuLimit
+          Memory: !Ref QrContainerMemoryLimit
+          PortMappings:
+            -
+              ContainerPort: !Ref AppContainerPort
+              HostPort: !Ref AppHostPort
+          Essential: true
+Outputs:
+  QrTaksDefinitionRevision:
+    Description: Revision number of task definition
+    Value: !Select [6, !Split [":", !Ref EcsTaskDefinition]]
+    Export:
+      Name: !Sub "${AWS::StackName}-revison"
+  QrTaksDefinitionFamily:
+    Description: Revision number of task definition
+    Value: !Ref FamilyName
+    Export:
+      Name: !Sub "${AWS::StackName}-family"

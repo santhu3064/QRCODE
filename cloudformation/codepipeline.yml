@@ -1,0 +1,158 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: A sample template
+Parameters:
+  ApplicationName:
+    Type: String
+    Default: qrcode
+    Description: Enter The name of thr application.
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - preprod
+      - prod
+    Description: EnvironmentName.
+  SourceStageName:
+    Type: String
+    Default: gitscm
+  SourceActionName:
+    Type: String
+    Default: Clonerepo
+  CodePiplineRoleDescription:
+    Type: String
+    Default: "The code pipeline assume role"
+  GitHubSource:
+    Type: String
+    Default: "https://github.com/santhu3064/QRCODE.git"
+  CodeBuildEnvironmentPrivilegedMode:
+    Type: String
+    Default: true
+  CodeBuildEnvironmentImage:
+    Type: String
+    Default: aws/codebuild/standard:4.0
+  CodeBuildEnvironmentType:
+    Type: String
+    Default: 'LINUX_CONTAINER'
+    AllowedValues:
+      - 'ARM_CONTAINER'
+      - 'LINUX_CONTAINER'
+      - 'LINUX_GPU_CONTAINER'
+      - 'WINDOWS_CONTAINER'
+      - 'WINDOWS_SERVER_2019_CONTAINER'
+  CodeBuildEnvironmentComputeType:
+    Type: String
+    Default: 'BUILD_GENERAL1_SMALL'
+    AllowedValues:
+      - 'BUILD_GENERAL1_SMALL'
+      - 'BUILD_GENERAL1_MEDIUM'
+      - 'BUILD_GENERAL1_LARGE'
+  ECRStackName:
+    Type: String
+    Default: 'arcade'
+  CodeBuildStackname:
+    Type: String
+    Default: codebuild-stack
+Resources:
+  CodepipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service: codepipeline.amazonaws.com
+      Path: /
+      Description: !Ref CodePiplineRoleDescription
+      RoleName: !Join
+        - '-'
+        - - codepipeline
+          - !Ref Application
+          - !Ref Environment
+          - 'role'
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+  EcrCodeBuildPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: !Join
+          - '-'
+          - - 'codebuild'
+            - !Ref ApplicationName
+            - !Ref Environment
+      Roles:
+        - !Ref CodepipelineRole
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              -  codebuild:BatchGetBuilds
+              -  codebuild:StartBuild
+              -  codebuild:BatchGetBuildBatches
+              -  codebuild:StartBuildBatch
+            Resource:
+              Fn::ImportValue:
+                !Sub "${CodeBuildStackname}-codebuild-arn"
+          - Effect: Allow
+            Action:
+              - 'codedeploy:CreateDeployment'
+              - 'codedeploy:GetApplicationRevision'
+              - 'codedeploy:GetDeployment'
+              - 'codedeploy:GetDeploymentConfig'
+              - 'codedeploy:RegisterApplicationRevision'
+            Resource: '*'
+          - Effect: Allow
+            Action:
+              - 'codebuild:BatchGetBuilds'
+              - 'codebuild:StartBuild'
+            Resource: '*'
+    DependsOn: CodeBuildRole
+  Type: AWS::CodePipeline::Pipeline
+  Properties:
+    Name: !Join
+      - '-'
+      - - !Ref ApplicationName
+        - !Ref Environment
+    RestartExecutionOnUpdate: No
+    RoleArn: !Ref CodepipelineRole
+    Stages:
+      - Name: !Ref SourceStageName
+        Actions:
+          - ActionTypeId:
+              Category: Source
+              Owner: AWS
+              Provider: CodeStarSourceConnection
+              Version: '1'
+            Configuration:
+              ConnectionArn: !Join
+                  - ':'
+                  - - arn
+                    - aws
+                    - codestar-connections
+                    - !Ref "AWS::Region"
+                    - !Ref "AWS::AccountId"
+                    - connection
+                    - /
+                    - ddb864ec-cfdd-4c1c-a4fe-8f1377b87f04
+              FullRepositoryId: "santhu3064/QRCODE"
+              BranchName: "master"
+            Name: !Ref SourceActionName
+            Region: !Ref "AWS::Region"
+            RunOrder: 1
+      - Name: !Ref DeployStageName
+        Actions:
+          - ActionTypeId:
+              Category: Build
+              Owner: AWS
+              Provider: CodeBuild
+              Version: '1'
+            Configuration:
+              ProjectName:
+              Fn::ImportValue:
+                !Sub "${CodeBuildStackname}-codebuild-name"
+            Name: !Ref BuildActionnName
+            Region: !Ref "AWS::Region"
+            RunOrder: 2
