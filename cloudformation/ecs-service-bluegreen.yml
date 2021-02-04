@@ -159,8 +159,6 @@ Resources:
             TargetGroups:
               - TargetGroupArn: !Ref EcsQrTargetGroupOne
                 Weight: 1
-              - TargetGroupArn: !Ref EcsQrTargetGroupTwo
-                Weight: 1
     DependsOn:
       - EcsQrTargetGroupOne
       - EcsQrTargetGroupTwo
@@ -196,27 +194,6 @@ Resources:
       TargetType: ip
       VpcId: vpc-04488209c8cc80a37
     DependsOn: EcsQrLoadBalancer
-
-  EcsTaskDefinition:
-    Type: AWS::ECS::TaskDefinition
-    Properties:
-      Family: !Ref FamilyName
-      RequiresCompatibilities: !Ref Capabilities
-      NetworkMode: !Ref TaskNetworkMode
-      ExecutionRoleArn: !GetAtt ECSTaskExecutionRole.Arn
-      Cpu: !Ref QrTaskCpuLimit
-      Memory: !Ref QrTaskMemoryLimit
-      ContainerDefinitions:
-        -
-          Name: !Ref QrContainerName
-          Image: !Ref QrImageName
-          Cpu: !Ref QrContainerCpuLimit
-          Memory: !Ref QrContainerMemoryLimit
-          PortMappings:
-            -
-              ContainerPort: !Ref AppContainerPort
-              HostPort: !Ref AppHostPort
-          Essential: true
   QrEcsService:
     Type: AWS::ECS::Service
     Properties:
