@@ -5,7 +5,7 @@ Resources:
       Properties:
         TaskDefinition: <TASK_DEFINITION>
         LoadBalancerInfo:
-          ContainerName: "qrcode"
+          ContainerName: "qc"
           ContainerPort: 80
 # Optional properties
         PlatformVersion: "LATEST"

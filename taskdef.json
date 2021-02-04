@@ -3,7 +3,7 @@
       {
          "essential": true,
          "image": "<IMAGE1_NAME>",
-         "name": "qrcode",
+         "name": "qc",
          "portMappings": [
             {
                "containerPort": 80,
@@ -15,7 +15,7 @@
    ],
    "cpu": "256",
    "executionRoleArn": "arn:aws:iam::307533935679:role/ecsTaskExecutionRole",
-   "family": "qrcodefinal",
+   "family": "qc",
    "memory": "512",
    "networkMode": "awsvpc",
    "requiresCompatibilities": [
