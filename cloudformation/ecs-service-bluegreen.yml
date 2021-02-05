@@ -47,7 +47,7 @@ Parameters:
     Default: ecscluster-dev
   QrCodeTaskDefinitionStackName:
     Type: String
-    Default: qrcodedev-taksdefiniton
+    Default: qrcodedev-taskdefiniton
   ServiceTaksDesiredCount:
     Type: Number
     Default: 3
@@ -110,7 +110,7 @@ Resources:
           ForwardConfig:
             TargetGroups:
               - TargetGroupArn: !Ref EcsQrTargetGroupOne
-                Weight: 1
+              - TargetGroupArn: !Ref EcsQrTargetGroupTwo
     DependsOn:
       - EcsQrTargetGroupOne
       - EcsQrTargetGroupTwo
@@ -174,3 +174,4 @@ Resources:
           - ContainerName: !Ref QrContainerName
             ContainerPort: !Ref AppContainerPort
             TargetGroupArn: !Ref EcsQrTargetGroupOne
+    DependsOn: EcsQrLoadBalancerListener

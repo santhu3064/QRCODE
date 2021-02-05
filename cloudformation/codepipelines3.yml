@@ -1,0 +1,54 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Tempalte to creat S3 bucket for codepipline
+Parameters:
+  BucketName:
+    Type: String
+    Default: codepipelinedevqrcode
+    Description: Enter The name of the bucket.
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - preprod
+      - prod
+    Description: EnvironmentName.
+Resources:
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+        # Need to define a static BucketName due to a circular dependency with the AWS::SNS::TopicPolicy
+        BucketName: !Ref BucketName
+        BucketEncryption:
+          ServerSideEncryptionConfiguration:
+            - ServerSideEncryptionByDefault:
+                SSEAlgorithm: AES256
+        AccessControl: BucketOwnerFullControl
+        LifecycleConfiguration:
+          Rules:
+            -
+              AbortIncompleteMultipartUpload:
+                DaysAfterInitiation: 3
+              NoncurrentVersionExpirationInDays: 3
+              Status: Enabled
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: true
+          BlockPublicPolicy: true
+          IgnorePublicAcls: true
+          RestrictPublicBuckets: true
+        Tags:
+          - Key: Name
+            Value: !Ref BucketName
+          - Key: Environment
+            Value: !Ref Environment
+Outputs:
+  BucketArn:
+    Description: The Arn of s3 Bucket for qrcode
+    Value: !GetAtt S3Bucket.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-bucket-arn"
+  BucketName:
+    Description: The name of S3 bucket for qrcode
+    Value: !Ref S3Bucket
+    Export:
+      Name: !Sub "${AWS::StackName}-bucket-name"
