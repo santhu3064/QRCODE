@@ -47,9 +47,6 @@ Parameters:
       - 'BUILD_GENERAL1_SMALL'
       - 'BUILD_GENERAL1_MEDIUM'
       - 'BUILD_GENERAL1_LARGE'
-  ECRStackName:
-    Type: String
-    Default: 'arcade'
   BuildStageName:
     Type: String
     Default: Build
@@ -77,9 +74,6 @@ Parameters:
   GitHubConnectionArn:
     Type: String
     Default: 'arn:aws:codestar-connections:eu-west-2:307533935679:connection/d6dbceb0-978d-45a3-a951-3174793a4998'
-  EcsStackName:
-    Type: String
-    Default: ecscluster-dev
   AppSpecTemplateArtifact:
     Type: String
     Default: BuildArtifact
