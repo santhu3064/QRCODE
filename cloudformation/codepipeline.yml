@@ -104,6 +104,9 @@ Parameters:
   AppSpecTemplatePath:
     Type: String
     Default: appspec.yaml
+  CodepipelineS3Bucketname:
+    Type: String
+    Default: codepipelinedevqrcode
 Resources:
   CodepipelineRole:
     Type: AWS::IAM::Role
@@ -162,27 +165,10 @@ Resources:
             Resource: '*'
           - Effect: Allow
             Action:
-              - 's3:ListBucketMultipartUploads'
-              - 's3:DeleteObjectVersion'
-              - 's3:ListBucketVersions'
-              - 's3:ListBucket'
-              - 's3:PutObjectLegalHold'
-              - 's3:GetBucketAcl'
-              - 's3:ListMultipartUploadParts'
-              - 's3:PutObject'
-              - 's3:GetObjectAcl'
-              - 's3:GetObject'
-              - 's3:PutObjectRetention'
-              - 's3:GetBucketCORS'
-              - 's3:GetObjectTagging'
-              - 's3:DeleteObject'
-              - 's3:PutBucketVersioning'
-              - 's3:GetObjectVersion'
-            Resource:
-              Fn::Join:
-                - "/"
-                - - Fn::ImportValue: !Sub "${CodepipelineS3stackname}-bucket-arn"
-                  - "*"
+              - s3:GetObject
+              - s3:PutObject
+              - s3:GetObjectVersion
+            Resource: !Sub arn:aws:s3:::${CodepipelineS3Bucketname}/*
           - Effect: Allow
             Action:
               - 'codestar-connections:UseConnection'
@@ -197,9 +183,7 @@ Resources:
       RestartExecutionOnUpdate: No
       RoleArn: 'arn:aws:iam::307533935679:role/service-role/AWSCodePipelineServiceRole-eu-west-2-test'
       ArtifactStore:
-        Location:
-          Fn::ImportValue:
-            !Sub "${CodepipelineS3stackname}-bucket-name"
+        Location: !Ref CodepipelineS3Bucketname
         Type: S3
       Stages:
         - Name: !Ref SourceStageName
@@ -259,3 +243,4 @@ Resources:
                 - Name: BuildArtifact
               Region: !Ref "AWS::Region"
               Namespace: DeployVariables
+    DependsOn: CodepipelineTriggerPolicy

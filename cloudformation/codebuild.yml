@@ -50,9 +50,9 @@ Parameters:
   ECRStackName:
     Type: String
     Default: 'dev-qr-ecr'
-  CodepipelineS3stackname:
+  CodepipelineS3Bucketname:
     Type: String
-    Default: codepiplines3bucket
+    Default: codepipelinedevqrcode
 Resources:
   CodeBuildRole:
     Type: AWS::IAM::Role
@@ -157,25 +157,11 @@ Resources:
         Statement:
           - Effect: Allow
             Action:
-              - s3:ListBucketMultipartUploads
-              - s3:DeleteObjectVersion
-              - s3:ListBucketVersions
-              - s3:ListBucket
-              - s3:PutObjectLegalHold
-              - s3:GetBucketAcl
-              - s3:ListMultipartUploadParts
-              - s3:PutObject
-              - s3:GetObjectAcl
+            Action:
               - s3:GetObject
-              - s3:PutObjectRetention
-              - s3:GetBucketCORS
-              - s3:GetObjectTagging
-              - s3:DeleteObject
-              - s3:PutBucketVersioning
+              - s3:PutObject
               - s3:GetObjectVersion
-            Resource:
-              Fn::ImportValue:
-                !Sub "${CodepipelineS3stackname}-bucket-arn"
+            Resource: !Sub arn:aws:s3:::${CodepipelineS3Bucketname}/*
     DependsOn: CodeBuildRole
   QrCodeBuild:
     Type: AWS::CodeBuild::Project

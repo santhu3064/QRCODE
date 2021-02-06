@@ -111,8 +111,6 @@ Resources:
             TargetGroups:
               - TargetGroupArn: !Ref EcsQrTargetGroupOne
                 Weight: 1
-              - TargetGroupArn: !Ref EcsQrTargetGroupTwo
-                Weight: 0
     DependsOn:
       - EcsQrTargetGroupOne
       - EcsQrTargetGroupTwo
