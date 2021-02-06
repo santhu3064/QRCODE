@@ -73,7 +73,7 @@ Parameters:
     Default: codepiplines3bucket
   GitHubConnectionArn:
     Type: String
-    Default: 'arn:aws:codestar-connections:eu-west-2:307533935679:connection/d6dbceb0-978d-45a3-a951-3174793a4998'
+    Default: 'arn:aws:codestar-connections:eu-west-2:{accountid}:connection/d6dbceb0-978d-45a3-a951-3174793a4998'
   AppSpecTemplateArtifact:
     Type: String
     Default: BuildArtifact
@@ -175,7 +175,7 @@ Resources:
         - - !Ref ApplicationName
           - !Ref Environment
       RestartExecutionOnUpdate: No
-      RoleArn: 'arn:aws:iam::307533935679:role/service-role/AWSCodePipelineServiceRole-eu-west-2-test'
+      RoleArn: 'arn:aws:iam::{accountid}:role/service-role/AWSCodePipelineServiceRole-eu-west-2-test'
       ArtifactStore:
         Location: !Ref CodepipelineS3Bucketname
         Type: S3

@@ -29,7 +29,7 @@ Parameters:
     Default:  "pheonix"
   QrImageName:
     Type: String
-    Default:  "307533935679.dkr.ecr.eu-west-2.amazonaws.com/qrcodecft:latest"
+    Default:  "{accountid}.dkr.ecr.eu-west-2.amazonaws.com/qrcodecft:latest"
   QrTaskCpuLimit:
     Type: Number
     Default: 512
