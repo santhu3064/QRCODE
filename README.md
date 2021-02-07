@@ -1,4 +1,4 @@
-# QRCODE project to deploy an Nginx application to ECS using blue-green deployment.
+# QRCODE project to deploy an sample html application to ECS using blue-green deployment with code build and code deploy.
 
 This project consists of a sample QRcode application with cloud formation stack for running the Application in ECS with FARGATE capability and setting up code pipeline to trigger blue-green deployment.
 
