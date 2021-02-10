@@ -1,4 +1,4 @@
-  AWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: "2010-09-09"
 Description: Template for creating ecs service
 Parameters:
   Environment:
@@ -20,7 +20,7 @@ Parameters:
     Default:  "pheonix"
   QrImageName:
     Type: String
-    Default:  "{accountid}.dkr.ecr.eu-west-2.amazonaws.com/qrcodecft:latest"
+    Default:  "307533935679.dkr.ecr.eu-west-2.amazonaws.com/qrcodecft:latest"
   QrTaskCpuLimit:
     Type: Number
     Default: 512
@@ -88,15 +88,46 @@ Parameters:
   EcsQrLoadBalancerName:
     Type: String
     Default: "qrecsloadbalancer"
-
+  SecurityGroupName:
+    Type: String
+    Default: pheoneix-securitygroup
+  SecurityGroupIngressCidrIp:
+    Type: String
+    Default: '0.0.0.0/0'
+  SslPort:
+    Type: Number
+    Default: 80
+  SgProtocol:
+    Type: String
+    Default: tcp
+    AllowedValues:
+      - tcp
+      - udp
+      - icmp
+      - icmpv6
+  VpcId:
+    Type: String
+    Default: 'vpc-04488209c8cc80a37'
 Resources:
+  LoadBalancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Secuirty group for Load balancer
+      GroupName: !Ref SecurityGroupName
+      SecurityGroupIngress:
+        - CidrIp: !Ref SecurityGroupIngressCidrIp
+          FromPort: !Ref SslPort
+          IpProtocol: !Ref SgProtocol
+          ToPort: !Ref SslPort
+      VpcId: !Ref VpcId
   EcsQrLoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       IpAddressType: ipv4
       Name: !Ref EcsQrLoadBalancerName
       Scheme: internet-facing
-      SecurityGroups: !Ref EcsSecurityGroup
+      SecurityGroups:
+        - !Ref LoadBalancerSecurityGroup
       Subnets: !Ref EcsSubnets
       Type: application
   EcsQrLoadBalancerListener:
@@ -128,7 +159,7 @@ Resources:
       Port: 80
       Protocol: HTTP
       TargetType: ip
-      VpcId: vpc-04488209c8cc80a37
+      VpcId: !Ref VpcId
     DependsOn: EcsQrLoadBalancer
   EcsQrTargetGroupTwo:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
@@ -144,7 +175,7 @@ Resources:
       Port: 80
       Protocol: HTTP
       TargetType: ip
-      VpcId: vpc-04488209c8cc80a37
+      VpcId: !Ref VpcId
     DependsOn: EcsQrLoadBalancer
   QrEcsService:
     Type: AWS::ECS::Service
