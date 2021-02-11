@@ -120,6 +120,17 @@ Resources:
           IpProtocol: !Ref SgProtocol
           ToPort: !Ref SslPort
       VpcId: !Ref VpcId
+  EcsServiceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Secuirty group for the service
+      GroupName: !Sub "${FamilyName}-ecs-sg"
+      SecurityGroupIngress:
+        - CidrIp: !Ref SecurityGroupIngressCidrIp
+          FromPort: !Ref SslPort
+          IpProtocol: !Ref SgProtocol
+          ToPort: !Ref SslPort
+      VpcId: !Ref VpcId
   EcsQrLoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -193,7 +204,7 @@ Resources:
         NetworkConfiguration:
           AwsvpcConfiguration:
             AssignPublicIp: ENABLED
-            SecurityGroups: !Ref EcsSecurityGroup
+            SecurityGroups: !Ref EcsServiceSecurityGroup
             Subnets: !Ref EcsSubnets
         TaskDefinition: !Join
             - ':'
